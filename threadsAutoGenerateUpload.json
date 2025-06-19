@@ -1,0 +1,263 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Threads Post: \n{{ $json.output }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent that converts **Threads posts into concise, high‑impact image prompts** for generating marketing graphics that pair perfectly with the post.\n\n## Objectives\n1. **Parse the Threads post** – identify the core idea, data points, and emotional hook.\n2. **Brand Alignment via Tavily** –\n   * If the post references a brand (e.g., *n8n*, *OpenAI*, *Figma*), run a Tavily search to fetch its official logo usage rules, primary HEX/RGB colors, typefaces, and any publicly available brand‑guideline snippets.\n   * Extract only elements that are safe for transformative use (e.g., brand color palette, geometric shapes inspired by the logo) while avoiding trademark infringement.\n3. **Compose the Visual Concept** – craft a prompt that guides a text‑to‑image model to produce a **marketing‑style graphic** that:\n   * Clearly reinforces the post’s key takeaway.\n   * Fits a Threads feed (1080×1350 portrait or 1080×1080 square; note dimensions in prompt).\n   * Embodies modern, polished aesthetics (clean typography areas, balanced white space, bold but minimal design).\n4. **Incorporate Data & Brand Elements** – include cited stats from the post and weave brand colors or simplified iconography (e.g., n8n’s teal‑green nodes pattern) when relevant.\n\n## Viral Visual Tips\n* **Hierarchy first** – strong headline area > focal graphic > supportive details.\n* **Contrast wins** – pair brand colors with neutral backgrounds for pop.\n* **Motion cues** – add subtle radial blur or streaks to imply speed/innovation.\n* **Texture & depth** – soft gradients or grain for a premium feel.\n\n## Output Instructions\n* **Return only the final image prompt** – no quotes, notes, or post text.\n* Never write “Placeholder text …” or anything blank.\n* Include numeric stats if present in the post.\n* Mention key layout suggestions (e.g., \"split‑screen\", \"upper‑third text box\").\n\n## Style Suggestions\n* Leverage abstract shapes, line icons, infographic elements, or metaphorical visuals.\n* Describe color use precisely (e.g., \"background: #0e1420; accent shapes: n8n teal #26e5d3\").\n* Suggest font styles generically (\"bold condensed sans\", \"light mono caption\").\n\n## Example Prompt (do **not** output this)\n\"Portrait 1080×1350 marketing graphic: dark navy (#0e1420) backdrop, n8n teal (#26e5d3) node‑mesh pattern sweeping diagonally, bold white headline space top‑center, minimalist line chart bottom‑right showing 3× productivity growth, subtle grain texture, modern sans typography area reserved for 120‑char caption.\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -700,
+        -380
+      ],
+      "id": "b7355211-eb7d-43b1-b4ed-58848e1d28cb",
+      "name": "Image Prompt Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro-preview-05-06",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1012,
+        -160
+      ],
+      "id": "7d3b31bf-d375-4fa2-a730-609609a17451",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AkOvSEELT2W9Om4f",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this tool to search the web.",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `What the user is searching for`, 'string') }}",
+        "options": {
+          "topic": "general",
+          "search_depth": "advanced",
+          "chunks_per_source": 3,
+          "max_results": 1,
+          "days": 7,
+          "include_answer": "advanced"
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        -160
+      ],
+      "id": "033a96c6-b349-48bc-9f6f-d9f1ffee8a8f",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "OYZoroNRb0ZMeK9N",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Threads Post Generator",
+        "formDescription": "Fill out these fields and you'll have a full LinkedIn post ready to go in a minute. ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic of Post",
+              "placeholder": "Robots",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Target Audience",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1260,
+        -380
+      ],
+      "id": "3e222de8-1904-436a-873c-0f5e0e0b8eee",
+      "name": "On form submission",
+      "webhookId": "359fa996-5531-40ae-be37-4a6e136952e2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic of Post: {{ $json['Topic of Post'] }}\n\nTarget Audience: {{ $json['Target Audience'] }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are an AI agent specialized in crafting professional, educational, and **high‑engagement Threads posts** on any topic provided by the user.\n\n## Objectives\n1. **Research First** – Begin every request by running a real‑time search with the **Tavily** tool to gather the most accurate, up‑to‑date information.\n2. **Audience Fit** – Tailor the voice, examples, and references to the specified target audience.\n3. **Platform Rules** – The final post *must*:\n   * **Not exceed 500 characters** total (including spaces, emojis, hashtags, and citations).\n   * Start with a concise, curiosity‑driven **hook** in the first \\~50 characters.\n   * Remain **professional yet conversational**; keep jargon minimal.\n   * Deliver a clear, actionable **insight or takeaway**.\n   * Use **emojis sparingly** and only when they add clarity or tone.\n   * Cite sources briefly in‑line (e.g., \"per \\[source]\").\n   * Include up to **5 laser‑focused hashtags** for discoverability.\n   * Finish with a **call to action** that invites replies, reposts, or shares.\n\n## Viral Boost Guidelines\nTo maximise reach and interaction on Threads:\n* **Brevity wins** – value‑dense sentences with no filler.\n* **Ask a question** or provoke thought to spark comments.\n* **Leverage trending yet relevant hashtags**; avoid over‑tagging.\n* **Tag a relevant influencer/brand** when it adds credibility or reach.\n* **Post at audience peak hours** (morning or evening local time).\n* **Visually break lines** with short paragraphs for easy scanning.\n* **Consistency** – maintain a recognisable tone across posts to build follower trust.\n\n## Output Instructions\n* Respond **only** with the final Threads post text (no explanations or notes).\n* Ensure the character count is ≤ 500 before sending.\n\n## Example Workflow\n1. Receive topic → e.g., *“ROI of warehouse automation”.*\n2. Tavily search → pull recent stats/case studies.\n3. Draft ≤ 500‑character post using research, hook, insight, citation, up to 5 hashtags, CTA.\n4. Double‑check character count & formatting, then return the post *only*.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -1040,
+        -380
+      ],
+      "id": "fdf2806a-74d0-4acd-b08a-ca3240ab429b",
+      "name": "Threads Post Agent"
+    },
+    {
+      "parameters": {
+        "content": "## AUTO UPLOAD THREADS SAMA GAMBAR",
+        "width": 500
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1060,
+        -440
+      ],
+      "id": "7b7d0619-9e04-4b9a-9c4f-708552402b37",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "user": "fahmiiireza",
+        "platform": [
+          "threads"
+        ],
+        "title": "={{ $('Threads Post Agent').item.json.output }}",
+        "photos": "data",
+        "caption": "={{ $('Threads Post Agent').item.json.output }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        -68,
+        -380
+      ],
+      "id": "837ef4cb-cfcd-4195-8add-ea29f5f2f94d",
+      "name": "Upload Threads",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "OqkXyXbgQndZCLHO",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "model": "gpt-image-1",
+        "prompt": "={{ $json.output }}",
+        "options": {
+          "quality": "medium",
+          "size": "1024x1024"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -320,
+        -380
+      ],
+      "id": "4a6bf944-ad81-439f-8c26-b4a15c4a2200",
+      "name": "Generate Threads Image",
+      "credentials": {
+        "openAiApi": {
+          "id": "vUi1cnEVR3z6yNiU",
+          "name": "fay openai"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Image Prompt Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate Threads Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Threads Post Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Threads Post Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "Image Prompt Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Threads Post Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Threads Post Agent": {
+      "main": [
+        [
+          {
+            "node": "Image Prompt Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Threads Image": {
+      "main": [
+        [
+          {
+            "node": "Upload Threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e9f5a465cb0b385b57f48c54f829c0808a2740aa4d847b8b3cfec46ccb4cee6d"
+  }
+}
