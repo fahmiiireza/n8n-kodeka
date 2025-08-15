@@ -1,0 +1,193 @@
+{
+  "name": "n8n + macrodroid",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hendrabca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1383baf7-62a2-4cc8-aa0a-733c49dec597",
+      "name": "Webhook",
+      "webhookId": "0cf5ae69-79a8-416a-8fc0-4d119c8c32f2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.body;\nconst match = text.match(/IDR\\s([\\d,.]+)/);\nconst amount = match ? match[1] : '0';\n\nconst result = `Transfer BCA sudah masuk senilai ${amount}`;\n\nreturn [{ result }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "67bf1a8b-4ad7-42d8-94db-1081836d7b4d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * (3 - 1 + 1)) + 1 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "b8c5c9f7-cd30-47ad-84b4-472c42b30981",
+      "name": "Wait",
+      "webhookId": "c6c4b801-37dc-4f9e-bd09-3795df5e5c7d"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Start Typing",
+        "session": "=session_hendra",
+        "chatId": "=6285656030393",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        448,
+        0
+      ],
+      "id": "0cc1f1e5-eaea-4e3e-a9d8-f5579afebaca",
+      "name": "Start Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DJAuEz23LfnQEj5p",
+          "name": "session_hendra"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Stop Typing",
+        "session": "=session_hendra",
+        "chatId": "=6285656030393",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        896,
+        0
+      ],
+      "id": "e96e2650-e7b6-4234-a749-f0813d192192",
+      "name": "Stop Typing",
+      "credentials": {
+        "wahaApi": {
+          "id": "DJAuEz23LfnQEj5p",
+          "name": "session_hendra"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "=session_hendra",
+        "chatId": "=6285656030393",
+        "text": "={{ $('Code').item.json.result }}",
+        "requestOptions": {}
+      },
+      "type": "@devlikeapro/n8n-nodes-waha.WAHA",
+      "typeVersion": 202502,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "4c9a706d-bec3-4b4c-b15c-6f8952a95c1b",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "DJAuEz23LfnQEj5p",
+          "name": "session_hendra"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Start Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Stop Typing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Typing": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stop Typing": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7ae73a57-d786-481e-90c9-6f85172f791e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "689fa22e68cd4198e4ae37f3cc44f498087edd235a867e22515be823bab694c7"
+  },
+  "id": "bEPYA6hJ5LhVE9DQ",
+  "tags": []
+}
